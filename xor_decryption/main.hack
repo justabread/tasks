@@ -99,6 +99,11 @@ function xOR(string $input, string $key): string {
       //és megnézem azt osztási maradékot az éppeni ciklus számával.
       //Ez azt fogja eredményezni, hogy a kulcs visszafordul 0-ra ha a végére
       //értünk de a bemeneti szövegből még vannak hátra karakterek.
+
+      //pl: 0 mod 2 -> 0
+      //    1 mod 2 -> 1
+      //    2 mod 2 -> 0
+      //    3 mod 2 -> 1
       $output .= $input[$i] ^ $key[$i % $keyLength];
   }
     
