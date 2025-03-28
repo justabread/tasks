@@ -1,0 +1,6 @@
+# Ignore site files
+vendor
+*.hhast.*cache
+.var
+package-lock.json
+composer.lock

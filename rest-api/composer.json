@@ -1,0 +1,22 @@
+{
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/dienesl/hhast.git"
+    }
+  ],
+  "require": {
+    "hhvm": "^4.168.2",
+    "facebook/hack-router": "^0.19.8",
+    "usox/hackttp": "^0.5.3"
+  },
+  "require-dev": {
+    "hhvm/hhast": "dev-main",
+    "hhvm/hhvm-autoload": "^3.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "hhvm/hhvm-autoload": true
+    }
+  }
+}

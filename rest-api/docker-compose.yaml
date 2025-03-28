@@ -1,0 +1,32 @@
+---
+services:
+  composer-install:
+    build:
+      context: .
+      dockerfile: composer.Dockerfile
+    image: hhvm-composer
+    volumes:
+      - .:/api:rw
+    working_dir: /api
+    command: composer install
+
+  hh-autoload:
+    depends_on:
+      composer-install:
+        condition: service_completed_successfully
+    image: hhvm/hhvm:4.172.0
+    volumes:
+      - .:/api:rw
+    working_dir: /api
+    command: ./vendor/bin/hh-autoload
+
+  api:
+    depends_on:
+      hh-autoload:
+        condition: service_completed_successfully
+    image: hhvm/hhvm:4.172.0
+    volumes:
+      - .:/api:ro
+    command: hhvm -m server -c /api/config.ini -p 80 -d "hhvm.server.source_root=/api/public"
+    ports:
+      - 9999:80
