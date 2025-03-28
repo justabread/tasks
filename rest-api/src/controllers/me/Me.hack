@@ -2,7 +2,6 @@ namespace songpushTest\controllers\me;
 
 use namespace HH\Lib\{C, Vec};
 use namespace songpushTest\{controllers, datas, models};
-use type songpushTest\Session;
 
 final class Me extends controllers\Controller {
     const type TResponseModel = models\Me;
@@ -22,14 +21,9 @@ final class Me extends controllers\Controller {
             $user ==>
                 $user->getId() === $userId,
         )
-            |> C\first($$) as nonnull;;
+            |> C\first($$) as nonnull;
 
-        
-
-        $isAgeRestricted = $user?->getAge() < 18 ?? true;
-
-
-        return new models\Me($userId, $user->getNickName(), $user->getName(), $isAgeRestricted);
+        return new models\Me($userId, $user->getNickName(), $user->getName(), $this->isAgeRestricted($user));
 
         //return new models\Me(0, "test", "test", false);
     }

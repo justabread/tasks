@@ -1,6 +1,7 @@
 namespace songpushTest\controllers;
 
 use namespace songpushTest;
+use type songpushTest\datas\user\{User};
 use type Facebook\Experimental\Http\Message\{
   ResponseInterface,
   ServerRequestInterface,
@@ -27,6 +28,10 @@ abstract class Controller {
 
   protected final function getSession()[]: songpushTest\Session {
     return $this->session;
+  }
+
+  protected final function isAgeRestricted(User $user): bool {
+    return $user?->getAge() < 18 ?? true;
   }
 
   public async function runAsync(
