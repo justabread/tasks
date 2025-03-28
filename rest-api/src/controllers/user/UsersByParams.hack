@@ -5,8 +5,8 @@ use namespace songpushTest\{controllers, datas, models};
 use type songpushTest\datas\user\{User};
 use namespace Facebook\HackRouter;
 
-final class UserById extends controllers\Controller {
-    const type TResponseModel = models\ResponseModel;
+final class UsersByParams extends controllers\Controller {
+    const type TResponseModel = models\User;
 
     <<__LateInit>> private User $user;
 
@@ -33,7 +33,7 @@ final class UserById extends controllers\Controller {
         $user = $this->findUser($userId);
 
         if($user !== null) {
-            if($userId === $sessionId) {
+            if($userId === $sessionId ) {
                 return new models\LoggedInUser($userId, $user->getNickName(), $user->getName(), $this->isAgeRestricted($user));
             }
 
