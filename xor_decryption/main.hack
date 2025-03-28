@@ -66,6 +66,38 @@ async function main_async(): Awaitable<void> {
   ];
   
 
+    // list($input, $hash) = $encrypted;
+
+  // $decoded = base64_decode($input);
+
+  // $decryptedInputs = decrypt($decoded);
+
+
+  // if(C\count($decryptedInputs) > 0) {
+  //   for($i = 0; $i < C\count($decryptedInputs); $i++){
+  //     echo $decryptedInputs[$i] . "\n";
+  //   }
+  // }
+
+  // $key = "KULCS";
+  // $encrypted = xOR('VGhpcyBpcyBhIHRlc3QgZW5nbGlzaCBzZW50ZW5jZS4=', $key);
+  // echo $encrypted . "\n";
+  // $decrypted = xOR($encrypted, $key);
+  // echo base64_decode($decrypted) . "\n";
+
+
+  // await IO\request_output()->writeAllAsync($encrypted);
+
+  // $decrypted = xOR($encrypted, $key);
+
+  // await IO\request_output()->writeAllAsync($decrypted);
+
+  // for ($offset = 0; $offset < 4; $offset++) {
+  //   $shiftedText = \substr($ciphertext, $offset);
+  //   $decrypted = xOR($shiftedText, $key);
+  //   \printf("Offset %d:\n%s\n\n", $offset, $decrypted);
+  // }
+
   $exitCode = 0;
 
   foreach ($tests as $testIdx => list($encrypted, $hash)) {
@@ -228,6 +260,23 @@ function decrypt(string $input): string {
       $result = $decrypted;
     }
   }
+
+  // $file = File\open_write_only(__DIR__.'/results.dat');
+
+  // foreach($keys as $key) {
+  //   $decrypted = xOR($input, $key);
+  //   //$file->writeAllAsync($decrypted . "\n" . $key . "\n");
+  //   // $file->writeAllAsync($key . "\n");
+    
+  //   $isLikelyEnglish = checkEnglish($decrypted, $commonWords);
+
+  //   if($isLikelyEnglish){
+  //     $file->writeAllAsync($decrypted . "\n" . $key . "\n");
+  //   }
+  // }
+
+
+  // $file->close();
 
   return $result;
 }
