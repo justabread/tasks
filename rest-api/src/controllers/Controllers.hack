@@ -4,6 +4,7 @@ use namespace HH\Lib\{C, Vec};
 use namespace songpushTest\{datas};
 use namespace songpushTest;
 use type songpushTest\datas\user\{User};
+use type songpushTest\datas\media\{Media};
 use type Facebook\Experimental\Http\Message\{
   ResponseInterface,
   ServerRequestInterface,
@@ -38,7 +39,7 @@ abstract class Controller {
     return $this->session;
   }
 
-  protected final function isAgeRestricted(User $user): bool {
+  protected final function isUserAgeRestricted(User $user)[]: bool {
     return $user?->getAge() < 18 ?? true;
   }
 
@@ -175,6 +176,33 @@ abstract class Controller {
 
   }
 
+  protected function getMediaById(int $mediaId): Media {
+    $media = Vec\filter(
+      datas\media\Medias::getValues(),
+      $media ==> $media->getId() === $mediaId,
+    )
+      |> C\first($$);
+
+    if ($media === null) {
+      throw new HackRouter\NotFoundException('Media not found');
+    }
+
+    return $media;
+  }
+
+  protected function getLoggedInUserData(): ?User {
+    $userId = 0;
+    $user = null;
+
+    if ($this->getSession()->isLogged()) {
+      $userId = $this->getSession()->getId();
+      $user = $this->getUserById($userId);
+    }
+
+    return $user;
+  }
+
+  //Technikailag egy egyszerűbb (gyorsabb) módja megnézni hogy bejelentkezett sessionről van-e szó
   protected function isValidLoginPresent(): bool {
     $isLogged = $this->getSession()->isLogged();
     $userId = $this->getSession()->getId();

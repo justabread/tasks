@@ -17,6 +17,7 @@ final class Router
         '/me' => controllers\me\Me::class,
         '/user/{id}' => controllers\user\UserById::class,
         '/user' => controllers\user\UsersByParams::class,
+        '/media/{id}' => controllers\login\MediaById::class,
       },
     };
   }

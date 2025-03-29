@@ -1,6 +1,7 @@
 namespace songpushTest\controllers\me;
 
 use namespace songpushTest\{controllers, datas, models};
+use namespace Facebook\HackRouter;
 
 final class Me extends controllers\Controller {
     const type TResponseModel = models\Me;
@@ -9,17 +10,17 @@ final class Me extends controllers\Controller {
 
     <<__Override>>
     protected async function doAsync(): Awaitable<this::TResponseModel> {
+        $loggedInUser = $this->getLoggedInUserData();
+        if ($loggedInUser !== null) {
+            return new models\Me(
+                $loggedInUser->getId(),
+                $loggedInUser->getNickName(),
+                $loggedInUser->getName(),
+                $this->isUserAgeRestricted($loggedInUser),
+            );
+        }
 
-        $userId = $this->getSession()->getId();
-
-        $user = $this->getUserById($userId);
-
-        return new models\Me(
-            $userId,
-            $user->getNickName(),
-            $user->getName(),
-            $this->isAgeRestricted($user),
-        );
+        throw new HackRouter\NotFoundException('No user is logged in.');
 
         //  TRIALS
         // \var_dump($this->getSession());

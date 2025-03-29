@@ -18,6 +18,10 @@ final class Media {
     return $this->id;
   }
 
+  public function getOwner()[]: user\User {
+    return $this->owner;
+  }
+
   public function isPrivate()[]: bool {
     return $this->private;
   }

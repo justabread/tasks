@@ -1,7 +1,6 @@
 namespace songpushTest\controllers\user;
 
 use namespace songpushTest\{controllers, datas, models};
-use type songpushTest\datas\user\{User};
 use namespace HH\Lib\{C, Str, Vec};
 use namespace HH;
 use namespace Facebook\HackRouter;
@@ -9,10 +8,35 @@ use namespace Facebook\HackRouter;
 final class UsersByParams extends controllers\Controller {
     const type TResponseModel = models\Users;
 
-    <<__LateInit>> private User $user;
+    <<__LateInit>> private models\Users $foundUsersResponse;
 
     <<__Override>>
     protected async function doAsync(): Awaitable<this::TResponseModel> {
+
+        return $this->foundUsersResponse;
+        // if (
+        //     \array_key_exists('name', $queryParams) &&
+        //     \array_key_exists('ids', $queryParams)
+        // ) {
+        //     $users = $this->getUsersByIds($userIds);
+        // }
+
+        // return new models\Users(
+        //     vec[
+        //         new models\BasicUser(-1, $this->getQueryParameters()['name']),
+        //         new models\LoggedInUser(
+        //             19,
+        //             'TestLoggedUserNickName',
+        //             'TestLoggedUserName',
+        //             false,
+        //         ),
+        //     ],
+        //     false,
+        // );
+    }
+
+    <<__Override>>
+    protected async function checkPermssionsAsync(): Awaitable<bool> {
         $sessionId = $this->getSession()->getId();
         // \error_log(
         //     \json_encode($this->getQueryParameters(), \JSON_PRETTY_PRINT),
@@ -84,10 +108,10 @@ final class UsersByParams extends controllers\Controller {
 
             //Lekérem az összes user-t amiknek az id-ja a kapott id-kkal megegyezik
             $users = $this->getUsersByIds($userIds, $skip, $limit);
-            $foundUsersCount = C\count($users);
+            $foundUsersResponseCount = C\count($users);
 
             //Ha nem találtunk egy user-t sem akkor exception time
-            if ($foundUsersCount === 0) {
+            if ($foundUsersResponseCount === 0) {
                 throw new HackRouter\NotFoundException('No users found');
             }
 
@@ -100,7 +124,7 @@ final class UsersByParams extends controllers\Controller {
                         $user->getId(),
                         $user->getNickName(),
                         $user->getName(),
-                        $this->isAgeRestricted($user),
+                        $this->isUserAgeRestricted($user),
                     );
                 } else {
                     $usersResponse[] =
@@ -109,18 +133,21 @@ final class UsersByParams extends controllers\Controller {
             }
 
             //Visszatérek a talált userekkel és ha a talált userek száma kevesebb az összes userénél akkor igazra álítom a hasMore-t
-            return new models\Users(
+            $this->foundUsersResponse = new models\Users(
                 $usersResponse,
-                $foundUsersCount < C\count(datas\user\Users::getValues()),
+                $foundUsersResponseCount <
+                    C\count(datas\user\Users::getValues()),
             );
+
+            return true;
         } else if (\array_key_exists('name', $queryParams)) {
             $name = $queryParams['name'] as string;
 
             $users = $this->getUsersByName($name);
-            $foundUsersCount = C\count($users);
+            $foundUsersResponseCount = C\count($users);
 
             //Ha nem találtunk egy user-t sem akkor exception time
-            if ($foundUsersCount === 0) {
+            if ($foundUsersResponseCount === 0) {
                 throw new HackRouter\NotFoundException('No users found');
             }
 
@@ -133,7 +160,7 @@ final class UsersByParams extends controllers\Controller {
                         $user->getId(),
                         $user->getNickName(),
                         $user->getName(),
-                        $this->isAgeRestricted($user),
+                        $this->isUserAgeRestricted($user),
                     );
                 } else {
                     $usersResponse[] =
@@ -142,38 +169,16 @@ final class UsersByParams extends controllers\Controller {
             }
 
             //Visszatérek a talált userekkel és ha a talált userek száma kevesebb az összes userénél akkor igazra álítom a hasMore-t
-            return new models\Users(
+            $this->foundUsersResponse = new models\Users(
                 $usersResponse,
-                $foundUsersCount < C\count(datas\user\Users::getValues()),
+                $foundUsersResponseCount <
+                    C\count(datas\user\Users::getValues()),
             );
+
+            return true;
 
         }
 
-        throw new HackRouter\NotFoundException('No Users Found.');
-
-        // if (
-        //     \array_key_exists('name', $queryParams) &&
-        //     \array_key_exists('ids', $queryParams)
-        // ) {
-        //     $users = $this->getUsersByIds($userIds);
-        // }
-
-        // return new models\Users(
-        //     vec[
-        //         new models\BasicUser(-1, $this->getQueryParameters()['name']),
-        //         new models\LoggedInUser(
-        //             19,
-        //             'TestLoggedUserNickName',
-        //             'TestLoggedUserName',
-        //             false,
-        //         ),
-        //     ],
-        //     false,
-        // );
-    }
-
-    <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
-        return $this->isValidLoginPresent();
+        return false;
     }
 }
