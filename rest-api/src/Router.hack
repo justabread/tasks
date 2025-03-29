@@ -16,6 +16,7 @@ final class Router
       HackRouter\HttpMethod::GET => ImmMap {
         '/me' => controllers\me\Me::class,
         '/user/{id}' => controllers\user\UserById::class,
+        '/user' => controllers\user\UsersByParams::class,
       },
     };
   }

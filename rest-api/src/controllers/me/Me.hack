@@ -1,6 +1,5 @@
 namespace songpushTest\controllers\me;
 
-use namespace HH\Lib\{C, Vec};
 use namespace songpushTest\{controllers, datas, models};
 
 final class Me extends controllers\Controller {
@@ -10,29 +9,29 @@ final class Me extends controllers\Controller {
 
     <<__Override>>
     protected async function doAsync(): Awaitable<this::TResponseModel> {
-        // \var_dump($this->getSession());
+
         $userId = $this->getSession()->getId();
+
+        $user = $this->getUserById($userId);
+
+        return new models\Me(
+            $userId,
+            $user->getNickName(),
+            $user->getName(),
+            $this->isAgeRestricted($user),
+        );
+
+        //  TRIALS
+        // \var_dump($this->getSession());
         // $rawRequest = await $this->getRequest()->getBody()->readAllAsync();
         //$header = $request->getHeader('Authorization');
         // $requestBody = \json_decode($rawRequest, true);
-
-        $user = Vec\filter(
-            datas\user\Users::getValues(),
-            $user ==>
-                $user->getId() === $userId,
-        )
-            |> C\first($$) as nonnull;
-
-        return new models\Me($userId, $user->getNickName(), $user->getName(), $this->isAgeRestricted($user));
 
         //return new models\Me(0, "test", "test", false);
     }
 
     <<__Override>>
     protected async function checkPermssionsAsync(): Awaitable<bool> {
-        $isLogged = $this->getSession()->isLogged();
-        $userId = $this->getSession()->getId();
-
-        return $userId > 0 && $isLogged;
+        return $this->isValidLoginPresent();
     }
 }

@@ -1,53 +1,179 @@
 namespace songpushTest\controllers\user;
 
-use namespace HH\Lib\{C, Vec};
 use namespace songpushTest\{controllers, datas, models};
 use type songpushTest\datas\user\{User};
+use namespace HH\Lib\{C, Str, Vec};
+use namespace HH;
 use namespace Facebook\HackRouter;
 
 final class UsersByParams extends controllers\Controller {
-    const type TResponseModel = models\User;
+    const type TResponseModel = models\Users;
 
     <<__LateInit>> private User $user;
-
-    protected function findUser(int $userId): ?User {
-        $user = Vec\filter(
-            datas\user\Users::getValues(),
-            $user ==>
-                $user->getId() === $userId,
-        )
-            |> C\first($$);
-
-        if($user === null) {
-            return null;
-        }
-
-        return $user;
-    }
 
     <<__Override>>
     protected async function doAsync(): Awaitable<this::TResponseModel> {
         $sessionId = $this->getSession()->getId();
-        $userId = (int)$this->getParameters()['id'];
+        // \error_log(
+        //     \json_encode($this->getQueryParameters(), \JSON_PRETTY_PRINT),
+        // );
+        // $userName = $this->getQueryParameters()['name'];
+        // $userIds = $this->getQueryParameters()['ids'];
+        // $skip = (int)$this->getQueryParameters()['skip'];
+        // $limit = (int)$this->getQueryParameters()['limit'];
 
-        $user = $this->findUser($userId);
+        $queryParams = $this->getQueryParameters();
 
-        if($user !== null) {
-            if($userId === $sessionId ) {
-                return new models\LoggedInUser($userId, $user->getNickName(), $user->getName(), $this->isAgeRestricted($user));
-            }
+        $skip = 0;
+        $limit = 3;
 
-            return new models\BasicUser($userId, $user->getName());
+        $users = vec[];
+
+        //Ha a skip query parameter létezik és valid integer akkor kiveszem az értékét
+        if (
+            \array_key_exists('skip', $queryParams) &&
+            Str\to_int($queryParams['skip']) !== null
+        ) {
+            $skip = (int)$queryParams['skip'];
         }
 
-        throw new HackRouter\NotFoundException('User not found');
-        //return new models\Me($userId, $user->getNickName(), $user->getName(), $isAgeRestricted);
+        //Ha a limit query parameter létezik és valid integer akkor kiveszem az értékét
+        if (
+            \array_key_exists('limit', $queryParams) &&
+            Str\to_int($queryParams['limit']) !== null
+        ) {
+            $limit = (int)$queryParams['limit'];
+        }
 
-        //return new models\UserById(0, "test", "test", false);
+        //Ha a keresett user id-k query paraméter létezik
+        if (\array_key_exists('ids', $queryParams)) {
+            //Kijavítom a helytelen '-ket helyes "-re, megkönnyítve a front-end dolgát
+            $jsonString = Str\replace($queryParams['ids'] as string, "'", '"');
+
+            //Ellenőrzöm hogy az Id-d helyes JSON formátumban érkeztek-e a request-ből
+            if (
+                !Str\starts_with($jsonString, '[') ||
+                !Str\ends_with($jsonString, ']')
+            ) {
+                throw new \InvalidArgumentException('Invalid JSON array');
+            }
+            //Dekódolom az Id-ket és dobok egy exception ha helytelen a json string
+            $decoded = \json_decode($jsonString, true);
+            if ($decoded === null) {
+                throw new \InvalidArgumentException('Malformed JSON');
+            }
+
+            //Dict-ből vectorrá konvertálom az id-ket és kiveszem belőlük a helytelen formátumúakat
+            $userIds = Vec\map_with_key($decoded, ($_key, $value) ==> $value);
+
+            $userIds = Vec\map(
+                $userIds,
+                $id ==> {
+                    if (\is_int($id)) {
+                        return $id;
+                    }
+
+                    if (\is_string($id) && Str\to_int($id) !== null) {
+                        return Str\to_int($id);
+                    }
+
+                    return null;
+                },
+            )
+                |> Vec\filter_nulls($$);
+
+            //Lekérem az összes user-t amiknek az id-ja a kapott id-kkal megegyezik
+            $users = $this->getUsersByIds($userIds, $skip, $limit);
+            $foundUsersCount = C\count($users);
+
+            //Ha nem találtunk egy user-t sem akkor exception time
+            if ($foundUsersCount === 0) {
+                throw new HackRouter\NotFoundException('No users found');
+            }
+
+            $usersResponse = vec[];
+
+            //Készítek response object-eket a talált userekből
+            foreach ($users as $user) {
+                if ($user->getId() === $sessionId) {
+                    $usersResponse[] = new models\LoggedInUser(
+                        $user->getId(),
+                        $user->getNickName(),
+                        $user->getName(),
+                        $this->isAgeRestricted($user),
+                    );
+                } else {
+                    $usersResponse[] =
+                        new models\BasicUser($user->getId(), $user->getName());
+                }
+            }
+
+            //Visszatérek a talált userekkel és ha a talált userek száma kevesebb az összes userénél akkor igazra álítom a hasMore-t
+            return new models\Users(
+                $usersResponse,
+                $foundUsersCount < C\count(datas\user\Users::getValues()),
+            );
+        } else if (\array_key_exists('name', $queryParams)) {
+            $name = $queryParams['name'] as string;
+
+            $users = $this->getUsersByName($name);
+            $foundUsersCount = C\count($users);
+
+            //Ha nem találtunk egy user-t sem akkor exception time
+            if ($foundUsersCount === 0) {
+                throw new HackRouter\NotFoundException('No users found');
+            }
+
+            $usersResponse = vec[];
+
+            //Készítek response object-eket a talált userekből
+            foreach ($users as $user) {
+                if ($user->getId() === $sessionId) {
+                    $usersResponse[] = new models\LoggedInUser(
+                        $user->getId(),
+                        $user->getNickName(),
+                        $user->getName(),
+                        $this->isAgeRestricted($user),
+                    );
+                } else {
+                    $usersResponse[] =
+                        new models\BasicUser($user->getId(), $user->getName());
+                }
+            }
+
+            //Visszatérek a talált userekkel és ha a talált userek száma kevesebb az összes userénél akkor igazra álítom a hasMore-t
+            return new models\Users(
+                $usersResponse,
+                $foundUsersCount < C\count(datas\user\Users::getValues()),
+            );
+
+        }
+
+        throw new HackRouter\NotFoundException('No Users Found.');
+
+        // if (
+        //     \array_key_exists('name', $queryParams) &&
+        //     \array_key_exists('ids', $queryParams)
+        // ) {
+        //     $users = $this->getUsersByIds($userIds);
+        // }
+
+        // return new models\Users(
+        //     vec[
+        //         new models\BasicUser(-1, $this->getQueryParameters()['name']),
+        //         new models\LoggedInUser(
+        //             19,
+        //             'TestLoggedUserNickName',
+        //             'TestLoggedUserName',
+        //             false,
+        //         ),
+        //     ],
+        //     false,
+        // );
     }
 
     <<__Override>>
     protected async function checkPermssionsAsync(): Awaitable<bool> {
-        return true;
+        return $this->isValidLoginPresent();
     }
 }

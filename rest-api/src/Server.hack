@@ -19,12 +19,15 @@ final class Server {
 
     $response = new HackTTP\Response($writer);
 
+    $queryParameters = new ImmMap($request->getQueryParams());
+
     try {
       list($controllerClass, $parameters) =
         (new Router())->routeRequest($request);
 
       $controller = new $controllerClass(
         $parameters,
+        $queryParameters,
         $request,
         await Session::loadAsync(
           $request->getServerParams()['HTTP_TOKEN'] ?? '',
