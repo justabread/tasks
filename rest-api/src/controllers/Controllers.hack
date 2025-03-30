@@ -143,15 +143,39 @@ abstract class Controller {
     return $foundUsers;
   }
 
-  protected function getUsersByName(
-    string $userName,
+  protected function getUsersByParams(
+    string $userName = '',
+    vec<int> $userIds = vec[],
     int $skip = 0,
     int $limit = 3,
   ): vec<User> {
 
+    // $foundUsers = Vec\filter(
+    //   datas\user\Users::getValues(),
+    //   $user ==> $user->getName() === $userName,
+    // );
+
     $foundUsers = Vec\filter(
       datas\user\Users::getValues(),
-      $user ==> $user->getName() === $userName,
+      $user ==> {
+
+        //A $nameMatches default értéke igaz, hogy visszatérjen az összes userrel ha nincs megadva se a név se a userIds
+        $nameMatches = true;
+
+        //Ha a userName nem üres string, tehát meg van adva akkor a nameMatches akkor lesz igaz,
+        //ha az éppen vizsgált user neve megegyezik a megadott névvel
+        if ($userName !== '') {
+          $nameMatches = $user->getName() === $userName;
+        }
+
+        //Ha a userids nem üres akkor azokat adja vissza ahol a userids és a név létezik a userben
+        //Ez akkor is működik ha nincs megadva username mert a nameMatches alapvetően igazra van állítva
+        if (!C\is_empty($userIds)) {
+          return $nameMatches && C\contains($userIds, $user->getId());
+        }
+
+        return $nameMatches;
+      },
     );
 
     //Először kiveszem az első $skip számú elemet és aztán kitörlöm az utolsó $limit-nyit

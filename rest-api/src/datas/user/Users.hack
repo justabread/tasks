@@ -36,4 +36,11 @@ enum class Users: User {
     'Sebastian Meyer',
     24,
   );
+  User goober = new User(
+    6,
+    'goober',
+    'a49cfe2629d1fed79f056c29f1f7a797e52a33cf', // rail34
+    'Max Müller',
+    21,
+  );
 }
