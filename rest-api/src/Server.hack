@@ -6,6 +6,7 @@ use namespace Usox\HackTTP;
 use type Exception;
 use type Facebook\Experimental\Http\Message\ServerRequestInterface;
 use function header;
+use type songpushTest\exceptions\UnauthorizedException;
 
 final class Server {
   const int PIPE_READ_BITES = 1000;
@@ -35,6 +36,8 @@ final class Server {
       );
 
       $response = await $controller->runAsync($response);
+    } catch (UnauthorizedException $_) {
+      $response = $response->withStatus(401);
     } catch (HackRouter\NotFoundException $_) {
       $response = $response->withStatus(404);
     } catch (HackRouter\MethodNotAllowedException $_) {

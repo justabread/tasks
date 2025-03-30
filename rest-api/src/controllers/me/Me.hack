@@ -1,6 +1,6 @@
 namespace songpushTest\controllers\me;
 
-use namespace songpushTest\{controllers, datas, models};
+use namespace songpushTest\{controllers, datas, exceptions, models};
 use namespace Facebook\HackRouter;
 
 final class Me extends controllers\Controller {
@@ -33,6 +33,10 @@ final class Me extends controllers\Controller {
 
     <<__Override>>
     protected async function checkPermssionsAsync(): Awaitable<bool> {
-        return $this->isValidLoginPresent();
+        if (!$this->isValidLoginPresent()) {
+            throw new exceptions\UnauthorizedException();
+        }
+
+        return true;
     }
 }
