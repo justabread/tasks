@@ -20,7 +20,7 @@ final class OwnedMedia extends Media {
     public function __construct(
         public int $id,
         public int $owner,
-        private bool $private,
+        public bool $private,
         public bool $ageRestricted,
         public string $title,
         public media\Type $type,

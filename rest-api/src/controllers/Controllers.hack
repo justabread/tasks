@@ -1,6 +1,6 @@
 namespace songpushTest\controllers;
 
-use namespace HH\Lib\{C, Vec};
+use namespace HH\Lib\{C, Str, Vec};
 use namespace songpushTest\{datas};
 use namespace songpushTest;
 use type songpushTest\datas\user\{User};
@@ -214,6 +214,48 @@ abstract class Controller {
     return $media;
   }
 
+  protected function getMediasByParams(
+    string $mediaTitle = '',
+    vec<int> $mediaIds = vec[],
+    int $ownerId = 0,
+    ?bool $isAgeRestricted = null,
+    ?bool $isPrivate = null,
+    int $skip = 0,
+    int $limit = 3,
+  ): vec<Media> {
+    $foundMedias = Vec\filter(
+      datas\media\Medias::getValues(),
+      $media ==> {
+        $titleMatches =
+          ($mediaTitle === '') || ($media->getTitle() === $mediaTitle);
+
+        $idMatches =
+          C\is_empty($mediaIds) || C\contains($mediaIds, $media->getId());
+
+        $ownerMatches =
+          ($ownerId === 0) || ($media->getOwner()->getId() === $ownerId);
+
+        $ageRestrictionMatches = ($isAgeRestricted === null) ||
+          ($media->isAgeRestricted() === $isAgeRestricted);
+
+        $privacyMatches =
+          ($isPrivate === null) || ($media->isPrivate() === $isPrivate);
+
+        return $titleMatches &&
+          $idMatches &&
+          $ownerMatches &&
+          $ageRestrictionMatches &&
+          $privacyMatches;
+      },
+    );
+
+    //Először kiveszem az első $skip számú elemet és aztán kitörlöm az utolsó $limit-nyit
+    $foundMedias = Vec\drop($foundMedias, $skip);
+    $foundMedias = Vec\take($foundMedias, $limit);
+
+    return $foundMedias;
+  }
+
   protected function getLoggedInUserData(): ?User {
     $userId = 0;
     $user = null;
@@ -232,5 +274,51 @@ abstract class Controller {
     $userId = $this->getSession()->getId();
 
     return $userId > 0 && $isLogged;
+  }
+
+  //Kivesz minden helytelen formátumú id-t és készít egy vektort a megadott id-kből
+  protected function sanitizeArrayFromParam(
+    ImmMap<string, string> $queryParams,
+    string $key,
+  ): vec<int> {
+    if (\array_key_exists($key, $queryParams)) {
+      //Kijavítom a helytelen '-ket helyes "-re, megkönnyítve a front-end dolgát
+      $jsonString = Str\replace($queryParams[$key] as string, "'", '"');
+
+      //Ellenőrzöm hogy az Id-d helyes JSON formátumban érkeztek-e a request-ből
+      if (
+        !Str\starts_with($jsonString, '[') || !Str\ends_with($jsonString, ']')
+      ) {
+        throw new \InvalidArgumentException('Invalid JSON array');
+      }
+      //Dekódolom az Id-ket és dobok egy exception ha helytelen a json string
+      $decoded = \json_decode($jsonString, true);
+      if ($decoded === null) {
+        throw new \InvalidArgumentException('Malformed JSON');
+      }
+
+      //Dict-ből vectorrá konvertálom az id-ket és kiveszem belőlük a helytelen formátumúakat
+      $userIds = Vec\map_with_key($decoded, ($_key, $value) ==> $value);
+
+      $userIds = Vec\map(
+        $userIds,
+        $id ==> {
+          if (\is_int($id)) {
+            return $id;
+          }
+
+          if (\is_string($id) && Str\to_int($id) !== null) {
+            return Str\to_int($id);
+          }
+
+          return null;
+        },
+      )
+        |> Vec\filter_nulls($$);
+
+      return $userIds;
+    }
+
+    return vec[];
   }
 }
