@@ -19,6 +19,7 @@ final class Router
         '/user' => controllers\user\UsersByParams::class,
         '/media/{id}' => controllers\login\MediaById::class,
         '/media' => controllers\media\MediasByParams::class,
+        '/media/{id}/download' => controllers\media\Download::class,
       },
       HackRouter\HttpMethod::PUT => ImmMap {
         '/enable' => controllers\ageRestricted\Enable::class,
