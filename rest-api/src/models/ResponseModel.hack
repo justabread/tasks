@@ -1,6 +1,6 @@
 namespace songpushTest\models;
 
-use namespace HH\Lib\Dict;
+use namespace HH\Lib\{Dict};
 use type JsonSerializable;
 
 abstract class ResponseModel implements JsonSerializable {
@@ -31,6 +31,11 @@ abstract class ResponseModel implements JsonSerializable {
 
     $base = dict['success' => $this->success];
 
-    return Dict\merge($base, dict['values' => $this->values]);
+    if ($this->success === true) {
+      return Dict\merge($base, dict['values' => $this->values]);
+    }
+
+    return $base;
+
   }
 }
