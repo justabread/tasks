@@ -1,6 +1,6 @@
 namespace songpushTest\controllers\media;
 
-use namespace songpushTest\{controllers, datas, models};
+use namespace songpushTest\{controllers, models};
 use namespace Facebook\HackRouter;
 use namespace HH\Asio;
 
