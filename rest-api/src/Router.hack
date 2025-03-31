@@ -23,6 +23,9 @@ final class Router
       HackRouter\HttpMethod::PUT => ImmMap {
         '/enable' => controllers\ageRestricted\Enable::class,
       },
+      HackRouter\HttpMethod::DELETE => ImmMap {
+        '/disable' => controllers\ageRestricted\Disable::class,
+      },
     };
   }
 }
