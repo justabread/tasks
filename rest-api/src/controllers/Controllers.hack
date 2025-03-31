@@ -40,7 +40,7 @@ abstract class Controller {
   }
 
   protected final function isUserAgeRestricted(User $user)[]: bool {
-    return $user?->getAge() < 18 ?? true;
+    return $user?->getAge() < 18 && !$this->session->getCanViewAgeRestricted();
   }
 
   public async function runAsync(

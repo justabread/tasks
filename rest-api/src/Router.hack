@@ -20,6 +20,9 @@ final class Router
         '/media/{id}' => controllers\login\MediaById::class,
         '/media' => controllers\media\MediasByParams::class,
       },
+      HackRouter\HttpMethod::PUT => ImmMap {
+        '/enable' => controllers\ageRestricted\Enable::class,
+      },
     };
   }
 }
