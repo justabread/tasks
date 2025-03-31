@@ -19,19 +19,26 @@ final class Login extends controllers\Controller {
   }
 
   <<__Override>>
-  protected async function checkPermssionsAsync(): Awaitable<bool> {
+  protected async function checkPermssionsAsync(
+  ): Awaitable<controllers\CheckPermssionsReturn> {
     $rawRequest = await $this->getRequest()->getBody()->readAllAsync();
     $requestBody = json_decode($rawRequest, true);
 
     if ($requestBody === null) {
-      return false;
+      return new controllers\CheckPermssionsReturn(
+        false,
+        'No request body was provided.',
+      );
     }
 
     $nickname = $requestBody['nickname'] ?? null;
     $password = $requestBody['password'] ?? null;
 
     if ($nickname === null || $password === null) {
-      return false;
+      return new controllers\CheckPermssionsReturn(
+        false,
+        'The nickMame and/or password was not provided',
+      );
     }
 
     $hash = sha1($password);
@@ -46,9 +53,12 @@ final class Login extends controllers\Controller {
     if ($user !== null) {
       $this->user = $user;
 
-      return true;
+      return new controllers\CheckPermssionsReturn(true);
     }
 
-    return false;
+    return new controllers\CheckPermssionsReturn(
+      false,
+      'No user was found with the given nickname and password',
+    );
   }
 }

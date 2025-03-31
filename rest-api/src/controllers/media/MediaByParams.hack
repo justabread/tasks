@@ -66,7 +66,8 @@ final class MediasByParams extends controllers\Controller {
     }
 
     <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
+    protected async function checkPermssionsAsync(
+    ): Awaitable<controllers\CheckPermssionsReturn> {
         $sessionId = $this->getSession()->getId();
         $queryParams = $this->getQueryParameters();
 
@@ -152,6 +153,6 @@ final class MediasByParams extends controllers\Controller {
                 C\count(datas\media\Medias::getValues()),
         );
 
-        return true;
+        return new controllers\CheckPermssionsReturn(true);
     }
 }

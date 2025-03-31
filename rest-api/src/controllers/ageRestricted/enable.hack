@@ -19,22 +19,30 @@ final class Enable extends controllers\Controller {
             return new models\VoidResponse(true);
         }
 
-        return new models\VoidResponse(false);
+        return
+            new models\VoidResponse(false, 'No user is logged in currently.');
     }
 
     <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
+    protected async function checkPermssionsAsync(
+    ): Awaitable<controllers\CheckPermssionsReturn> {
         $rawRequest = await $this->getRequest()->getBody()->readAllAsync();
         $requestBody = \json_decode($rawRequest, true);
 
         if ($requestBody === null) {
-            return false;
+            return new controllers\CheckPermssionsReturn(
+                false,
+                'No request body was provided',
+            );
         }
 
         $password = $requestBody['password'] ?? null;
 
         if ($password === null) {
-            return false;
+            return new controllers\CheckPermssionsReturn(
+                false,
+                'No password was given in the request.',
+            );
         }
 
         $hash = sha1($password);
@@ -46,9 +54,12 @@ final class Enable extends controllers\Controller {
             |> C\first($$);
 
         if ($user !== null && $this->getSession()->getId() === $user->getId()) {
-            return true;
+            return new controllers\CheckPermssionsReturn(true);
         }
 
-        return false;
+        return new controllers\CheckPermssionsReturn(
+            false,
+            'No user was found with the given password, or the given password is not the password of the user currently logged in.',
+        );
     }
 }

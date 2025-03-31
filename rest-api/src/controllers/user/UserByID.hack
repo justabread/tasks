@@ -18,7 +18,8 @@ final class UserById extends controllers\Controller {
     }
 
     <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
+    protected async function checkPermssionsAsync(
+    ): Awaitable<controllers\CheckPermssionsReturn> {
         $sessionId = $this->getSession()->getId();
         $userId = (int)$this->getParameters()['id'];
 
@@ -32,14 +33,17 @@ final class UserById extends controllers\Controller {
                 $this->isUserAgeRestricted($user),
             );
 
-            return true;
+            return new controllers\CheckPermssionsReturn(true);
         } else {
             $this->foundUserResponse =
                 new models\BasicUser($userId, $user->getName());
 
-            return true;
+            return new controllers\CheckPermssionsReturn(true);
         }
 
-        return false;
+        return new controllers\CheckPermssionsReturn(
+            false,
+            'If this message was received, it means that the 404 exception was not thrown when no user was found with the given id.',
+        );
     }
 }

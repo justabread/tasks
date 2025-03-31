@@ -46,10 +46,13 @@ abstract class Controller {
   public async function runAsync(
     ResponseInterface $response,
   ): Awaitable<ResponseInterface> {
-    if ((await $this->checkPermssionsAsync())) {
+    $permissionResult = await $this->checkPermssionsAsync();
+
+    if (($permissionResult->success)) {
       $responseModel = await $this->doAsync();
     } else {
-      $responseModel = new songpushTest\models\VoidResponse(false);
+      $responseModel =
+        new songpushTest\models\VoidResponse(false, $permissionResult->reason);
     }
 
     await $response->getBody()->writeAllAsync(json_encode($responseModel));
@@ -58,7 +61,8 @@ abstract class Controller {
   }
 
   abstract protected function doAsync(): Awaitable<this::TResponseModel>;
-  abstract protected function checkPermssionsAsync(): Awaitable<bool>;
+  abstract protected function checkPermssionsAsync(
+  ): Awaitable<CheckPermssionsReturn>;
 
   protected function getUserById(int $userId): User {
     $user = Vec\filter(

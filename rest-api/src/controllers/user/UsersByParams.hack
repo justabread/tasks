@@ -36,7 +36,8 @@ final class UsersByParams extends controllers\Controller {
     }
 
     <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
+    protected async function checkPermssionsAsync(
+    ): Awaitable<controllers\CheckPermssionsReturn> {
         $sessionId = $this->getSession()->getId();
         // \error_log(
         //     \json_encode($this->getQueryParameters(), \JSON_PRETTY_PRINT),
@@ -109,7 +110,7 @@ final class UsersByParams extends controllers\Controller {
             $foundUsersResponseCount < C\count(datas\user\Users::getValues()),
         );
 
-        return true;
+        return new controllers\CheckPermssionsReturn(true);
     }
 }
 

@@ -19,7 +19,8 @@ final class MediaById extends controllers\Controller {
     }
 
     <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
+    protected async function checkPermssionsAsync(
+    ): Awaitable<controllers\CheckPermssionsReturn> {
         $mediaId = (int)$this->getParameters()['id'];
 
         //Lekérem azt a médiát amelyiknek az id-je requestben érkezett
@@ -65,7 +66,7 @@ final class MediaById extends controllers\Controller {
                 $foundMedia->getTitle(),
                 $foundMedia->getType(),
             );
-            return true;
+            return new controllers\CheckPermssionsReturn(true);
         } else {
             $this->foundMediaResponse = new models\BasicMedia(
                 $foundMedia->getId(),
@@ -74,9 +75,12 @@ final class MediaById extends controllers\Controller {
                 $foundMedia->getTitle(),
                 $foundMedia->getType(),
             );
-            return true;
+            return new controllers\CheckPermssionsReturn(true);
         }
 
-        return false;
+        return new controllers\CheckPermssionsReturn(
+            false,
+            'If this message was received, it means that the 404 exception was not thrown when no user was found with the given id.',
+        );
     }
 }

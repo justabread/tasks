@@ -32,11 +32,12 @@ final class Me extends controllers\Controller {
     }
 
     <<__Override>>
-    protected async function checkPermssionsAsync(): Awaitable<bool> {
+    protected async function checkPermssionsAsync(
+    ): Awaitable<controllers\CheckPermssionsReturn> {
         if (!$this->isValidLoginPresent()) {
             throw new exceptions\UnauthorizedException();
         }
 
-        return true;
+        return new controllers\CheckPermssionsReturn(true);
     }
 }
