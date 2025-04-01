@@ -72,11 +72,17 @@ async function main_async(): Awaitable<noreturn> {
 //találtam egy optimizált megoldást amit lefordítottam hack-re és implementáltam ebbe megoldásba
 function checkPrime(int $num): bool {
   //Ide bevezettem több checket, azon kívül, hogy a szám kisebb mint 2
-  if ($num < 2) return false;
+  if ($num < 2){
+    return false;
+  }
   //Ha a szám 2 akkor prím
-  if ($num == 2) return true;
+  if ($num == 2) {
+    return true;
+  } 
   //ha a szám osztható 2-vel akkor biztos nem prím
-  if ($num % 2 == 0) return false;
+  if ($num % 2 == 0) {
+    return false;
+  }
 
   //A régi megoldással szemben itt csak a keresett szám gyökéig + 1 megyünk (+1 azért mert elhal ha csak gyökig megyek kerekítés miatt)
   //Ezt ezzel a példával értettem meg (36)
@@ -94,7 +100,9 @@ function checkPrime(int $num): bool {
   //az osztásoknak
   $sqrt = (int)\sqrt((float)$num) + 1;
   for ($i = 2; $i < $sqrt; $i++) {
-    if ($num % $i == 0) return false;
+    if ($num % $i == 0) {
+      return false;
+    }
   }
   return true;
 }
