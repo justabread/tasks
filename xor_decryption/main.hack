@@ -176,7 +176,7 @@ function generateKeys(): vec<string> {
     }
   }
 
-  //Ezt a kulcsot az utolsó test case-ért rakom bele a kulcs tárba
+  //Ezt a kulcsot az utolsó test case-ért rakom bele a kulcs tárba (vicces volt debugolni)
   $allKeys[] = "AWOEB";
 
   return $allKeys;
