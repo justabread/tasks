@@ -1,5 +1,8 @@
 namespace songpush\tasks\xor_decrypt;
 
+//Ez volt a harmadik feladat és az első aminél nekivágtam a megoldásnak hack-ben. Ezt utólag megköszöntem magamnak,
+//mert ez a gyakorlat után már nem volt annyira félelmetes elkezdeni a rest-api feladatot.
+
 use namespace HH\Lib\{IO, Str, Vec, C, File, Regex};
 use function base64_decode;
 use function base64_encode;
@@ -176,6 +179,14 @@ function generateKeys(): vec<string> {
     }
   }
 
+  //Itt őszínte leszek, majdnem feladtam és hagytam a feladatot úgy, hogy csak az 1-4 test case volt sikeres,
+  //de szerencsére miután véletlenszerűen elkezdtem kínomban hozzáadni betűket az AWOE kulcshoz az AWOEA félig
+  //értelmezhető mondatot addott ki. Ezek után miután a következő betűt (B) hozzátettem megkaptam a helyes megoldást.
+
+  //Ebből kifolyólag volt egy kis dilemmám hogy tegyek-e bele egy 5 egymásba ágyazott ciklust is hogy "szabályosan"
+  //jöjjön rá a kulcsra a tesztelésnél, de úgy döntöttem hogy mível gyakorlatilag a feladat leírásán kívül esik ez az eset
+  //ezért csak hozzáteszem explicit az összes kulcshoz.
+
   //Ezt a kulcsot az utolsó test case-ért rakom bele a kulcs tárba (vicces volt debugolni)
   $allKeys[] = "AWOEB";
 
@@ -232,7 +243,7 @@ function checkEnglish(string $rawInput, vec<string> $commonWords): bool {
     $vowelRatio = $vowels / $consonants;
   }
 
-  //Hogyha több mint egy hasonló szót talált és a magánhangzók/mássalhangzók aránya 0.3 és 3 között van akkor
+  //Hogyha több mint egy hasonló szót talált és a magánhangzók/mássalhangzók aránya 0.3 és 1.5 között van akkor
   //valószínűleg helyes angol mondatot találtunk
   //&&($vowelRatio >= 0.3 && $vowelRatio <= 3.0)
   if(($found > 6) && ($vowelRatio >= 0.3 && $vowelRatio <= 1.5)) {

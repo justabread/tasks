@@ -1,5 +1,15 @@
 namespace songpush\tasks\get_primes_product;
 
+//Ez lett volna eredetileg a második feladat amit meg akartam oldani, de nem jöttem rá hirtelen hogyan induljak el vele miután végeztem
+//a find_largest_prime-mal, mert ugyan azzal az iteratív módszerrel próbálkoztam mint annál a feladatnál. A rest-api után újult erővel
+//kezdtem neki és itt már rekurzív megközelítéssel ki tudtam dolgozni egy működő megoldást. Egészen addig, amíg el nem értem a negyedik
+//mátrixig a tesztben, ahol a program másfél óra futás után sem talált megfelelő megoldást ami után utána kellett néznem, hogy hol tudjam 
+//optimalizálni a futást. Ekkor implementáltam az új prime ellenőrző algoritmust amit részletesen kifejtek a függvény definíciónál.
+
+//Összességében 1 hét kellett a feladatok megoldására, a rest-api-ig 1 feladat/nap a rest-api maga pedig 3-4 napot vett igénybe. Nem voltak
+//egyszerűek, sok helyen éreztem úgy, hogy nem fogok tudni kitalálni jó megoldást de így a végén pozitív élménynek könyveltem el (még az 
+//xOR feladat 5. test case-ét is).
+
 use namespace HH\Lib\{C, IO, Str};
 use function exist;
 
