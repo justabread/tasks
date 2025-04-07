@@ -1,6 +1,6 @@
 namespace songpush\tasks\find_largest_prime;
 
-use namespace HH\Lib\{IO, Str};
+use namespace HH\Lib\{C, IO, Str};
 use function exit;
 
 <<__EntryPoint>>
@@ -81,7 +81,122 @@ async function main_async(): Awaitable<noreturn> {
   exit($exitCode);
 }
 
+function checkPrime(int $num)[]: bool {
+  if ($num < 2) {
+    return false;
+  }
+
+  if ($num == 2) {
+    return true;
+  }
+
+  if ($num % 2 == 0) {
+    return false;
+  }
+
+  $sqrt = (int)\sqrt((float)$num) + 1;
+
+  //Itt teljesen igazad volt, félrenézés volt az én részemről, itt már háromtól indulok és kettesével lépek, hogy csak páratlan számokat
+  //ellenőrizzek
+  for ($i = 3; $i < $sqrt; $i += 2) {
+    if ($num % $i == 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function searchMatrixFromPoint(
+  int $i,
+  int $j,
+  vec<vec<int>> $matrix,
+  vec<vec<bool>> $visited,
+  int $currentValue,
+  int $rows,
+  int $cols,
+)[]: vec<int> {
+  $visited[$i][$j] = true;
+  $newValue = $currentValue * 10 + $matrix[$i][$j];
+  $primes = vec[];
+
+  //Ellenőrzöm, Idx(n) = N or Idx(m) = M -nek megfelelően hogy megfelelő helyen van-e és prím szám e a vizsgált érték
+  if ((($j == $cols - 1) || ($i == $rows - 1)) && checkPrime($newValue)) {
+    $primes[] = $newValue;
+  }
+
+  //Itt csak a jobbra és le irányokat vizsgálom ebben a feladatban
+  $directions = vec[
+    vec[0, 1], //jobbra
+    vec[1, 0], //le
+  ];
+
+  foreach ($directions as $dir) {
+    $iDir = $i + $dir[0];
+    $jDir = $j + $dir[1];
+
+    if (
+      $iDir >= 0 &&
+      $iDir < $rows &&
+      $jDir >= 0 &&
+      $jDir < $cols &&
+      !$visited[$iDir][$jDir]
+    ) {
+      $foundPrimes = searchMatrixFromPoint(
+        $iDir,
+        $jDir,
+        $matrix,
+        $visited,
+        $newValue,
+        $rows,
+        $cols,
+      );
+
+      foreach ($foundPrimes as $prime) {
+        $primes[] = $prime;
+      }
+    }
+  }
+
+  return $primes;
+}
+
 function get_largest_prime(vec<vec<int>> $matrix)[]: int {
-  // IMPLEMENT ME
-  return -1;
+  $rows = C\count($matrix);
+  $cols = C\count($matrix[0]);
+
+  //Itt keysetre állítottam a típúst a tanácsodnak megfelelően
+  $allFoundPrimes = keyset[];
+
+  for ($i = 0; $i < $rows; $i++) {
+    for ($j = 0; $j < $cols; $j++) {
+      //Hogyha az első sorban vagyunk vagy az első oszlopban, úgy hogy az első utáni sorban
+      if ($i == 0 || ($j == 0 && $i > 0)) {
+        $visited = vec[];
+        for ($k = 0; $k < $rows; $k++) {
+          $visited[] = vec[];
+          for ($l = 0; $l < $cols; $l++) {
+            $visited[$k][] = false;
+          }
+        }
+
+        $currentCellPrimes =
+          searchMatrixFromPoint($i, $j, $matrix, $visited, 0, $rows, $cols);
+
+        //Ha véget ért a pontbóli mélységi keresés akkor hozzáfűzöm a pontból talált prímeket az összes prímhez
+        foreach ($currentCellPrimes as $prime) {
+          $allFoundPrimes[] = $prime;
+        }
+      }
+    }
+  }
+
+  $largestPrime = -1;
+
+  foreach ($allFoundPrimes as $prime) {
+    if ($prime > $largestPrime) {
+      $largestPrime = $prime;
+    }
+  }
+
+  return $largestPrime;
 }
